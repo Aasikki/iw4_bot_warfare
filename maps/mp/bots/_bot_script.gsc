@@ -450,7 +450,7 @@ getKillstreaks()
 			empty_rows = 0;
 		}
 		
-		if ( streak_name == "none" || streak_name == "b1" || streak_name == "sentry" || issubstr( streak_name, "KILLSTREAKS_" )
+		if ( streak_name == "none" || streak_name == "b1" || streak_name == "sentry" || issubstr( streak_name, "KILLSTREAKS_" ) )
 		{
 			continue;
 		}
