@@ -27,7 +27,8 @@ jobs:
           mkdir -p release_payload
           cp z_svr_bots.iwd release_payload/
           if [ -d scriptdata/waypoints ]; then
-            cp -R scriptdata/waypoints release_payload/
+            mkdir -p release_payload/scriptdata
+            cp -R scriptdata/waypoints release_payload/scriptdata/
           fi
 
           cd release_payload
