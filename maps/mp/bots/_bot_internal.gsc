@@ -1472,12 +1472,12 @@ target_loop()
 							player checkTraceForBone( myEye, "j_ankle_le" ) ||
 							player checkTraceForBone( myEye, "j_ankle_ri" ) )
 							
-						&& ( ignoreSmoke && !self isemped() && !player _hasperk( "specialty_coldblooded" ) ) ||
+						&& ( ( ignoreSmoke && !self isemped() && !player _hasperk( "specialty_coldblooded" ) ) ||
 							SmokeTrace( myEye, player.origin, level.smokeradius ) ||
 							daDist < level.bots_maxknifedistance * 4 )
 							
 						&& ( getConeDot( player.origin, self.origin, myAngles ) >= myFov ||
-							( isObjDef && obj.trace_time ) );
+							( isObjDef && obj.trace_time ) ) );
 			}
 			
 			if ( isdefined( self.bot.target_this_frame ) && self.bot.target_this_frame == player )
