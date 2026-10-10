@@ -1477,7 +1477,7 @@ target_loop()
 							daDist < level.bots_maxknifedistance * 4 )
 							
 						&& ( getConeDot( player.origin, self.origin, myAngles ) >= myFov ||
-							( isObjDef && obj.trace_time ) ) );
+							( isObjDef && obj.trace_time ) );
 			}
 			
 			if ( isdefined( self.bot.target_this_frame ) && self.bot.target_this_frame == player )
