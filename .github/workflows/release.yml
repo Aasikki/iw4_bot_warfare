@@ -1,0 +1,46 @@
+name: Release z_svr_bots
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build z_svr_bots.iwd
+        run: |
+          set -e
+          zip -r z_svr_bots.iwd maps scripts
+
+      - name: Bundle release payload
+        run: |
+          set -e
+          mkdir -p release_payload
+          cp z_svr_bots.iwd release_payload/
+          if [ -d scriptdata/waypoints ]; then
+            cp -R scriptdata/waypoints release_payload/
+          fi
+
+          cd release_payload
+          zip -r ../z_svr_bots_release.zip .
+          cd ..
+
+          ls -lh z_svr_bots.iwd z_svr_bots_release.zip
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            z_svr_bots.iwd
+            z_svr_bots_release.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
