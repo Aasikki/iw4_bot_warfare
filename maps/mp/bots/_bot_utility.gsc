@@ -1738,10 +1738,6 @@ getGoodMapAmount()
 		case "trainer":
 		case "dc_whitehouse":
 		case "mp_shipment":
-		case "mp_countdown":
-		case "mp_showdown":
-		case "mp_farm":
-		case "mp_pipeline":
 			if ( level.teambased )
 			{
 				return 8;
@@ -1762,15 +1758,6 @@ getGoodMapAmount()
 		case "mp_fav_tropical":
 		case "mp_shipment_long":
 		case "mp_rust_long":
-		case "mp_backlot":
-		case "mp_carentan":
-		case "mp_citystreets":
-		case "mp_hardhat":
-		case "mp_seatown":
-		case "mp_bravo":
-		case "mp_plaza2":
-		case "mp_alpha":
-		case "mp_dome":
 			if ( level.teambased )
 			{
 				return 12;
@@ -1806,11 +1793,6 @@ getGoodMapAmount()
 		case "mp_crash_tropical":
 		case "mp_estate_tropical":
 		case "mp_bloc_sh":
-		case "mp_broadcast":
-		case "mp_convoy":
-		case "mp_crash_snow":
-		case "mp_paris":
-		case "mp_village":
 			if ( level.teambased )
 			{
 				return 14;
@@ -1823,7 +1805,6 @@ getGoodMapAmount()
 		case "mp_fuel2":
 		case "mp_invasion":
 		case "mp_derail":
-		case "mp_underground":
 			if ( level.teambased )
 			{
 				return 16;
@@ -1834,7 +1815,7 @@ getGoodMapAmount()
 			}
 			
 		default:
-			return 8;
+			return 2;
 	}
 }
 
