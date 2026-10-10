@@ -695,9 +695,10 @@ connected()
 	level.bots[ level.bots.size ] = self;
 	self thread onDisconnect();
 	
-	level notify( "bot_connected", self );
-	
 	self thread watchBotDebugEvent();
+
+	waittillframeend; // wait for waittills to process
+	level notify( "bot_connected", self );
 }
 
 /*
@@ -1097,7 +1098,7 @@ addBots_loop()
 	
 	fillMode = getdvarint( "bots_manage_fill_mode" );
 	
-	if ( fillMode == 2 || fillMode == 3 )
+	if ( fillMode == 2 || fillMode == 3 || fillMode == 5 )
 	{
 		setdvar( "bots_manage_fill", getGoodMapAmount() );
 	}
@@ -1160,7 +1161,7 @@ addBots_loop()
 	}
 	
 	// use bots as balance
-	if ( fillMode == 4 )
+	if ( fillMode == 4 || fillMode == 5 )
 	{
 		diffPlayers = abs( alliesplayers - axisplayers );
 		amount = fillAmount - ( diffPlayers - bots );
