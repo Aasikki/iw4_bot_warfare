@@ -31,8 +31,8 @@ jobs:
             cp -R scriptdata/waypoints release_payload/scriptdata/
           fi
           if [ -f scriptdata/bots.txt ]; then
-            mkdir -p release_payload/userraw/scriptdata
-            cp scriptdata/bots.txt release_payload/userraw/scriptdata/
+            mkdir -p release_payload/scriptdata
+            cp scriptdata/bots.txt release_payload/scriptdata/
           fi
 
           cd release_payload
