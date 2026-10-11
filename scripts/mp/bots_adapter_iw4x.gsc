@@ -25,13 +25,21 @@ do_filewrite( file, contents, mode )
 
 do_fileread( file )
 {
-	file = "scriptdata/" + file;
+	if ( file != "bots.txt" )
+	{
+		file = "scriptdata/" + file;
+	}
+
 	return fileread( file );
 }
 
 do_fileexists( file )
 {
-	file = "scriptdata/" + file;
+	if ( file != "bots.txt" )
+	{
+		file = "scriptdata/" + file;
+	}
+
 	return fileexists( file );
 }
 

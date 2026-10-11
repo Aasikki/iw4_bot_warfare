@@ -25,6 +25,20 @@ added()
 		
 		self setplayerdata( "cardTitle", random( getCardTitles() ) );
 		self setplayerdata( "cardIcon", random( getCardIcons() ) );
+
+		card_config = getBotCardConfig( self.name );
+		if ( isdefined( card_config ) )
+		{
+			if ( isdefined( card_config.title ) && card_config.title != "" )
+			{
+				self setplayerdata( "cardTitle", card_config.title );
+			}
+
+			if ( isdefined( card_config.emblem ) && card_config.emblem != "" )
+			{
+				self setplayerdata( "cardIcon", card_config.emblem );
+			}
+		}
 	}
 	
 	self setClasses();
@@ -225,6 +239,48 @@ getCardIcons()
 	}
 	
 	return cards;
+}
+
+/*
+	Gets custom title card settings for a bot from bots.txt
+*/
+getBotCardConfig( bot_name )
+{
+	if ( !isdefined( level.bot_card_configs ) )
+	{
+		level.bot_card_configs = [];
+		result = getWaypointLinesFromFile( "bots.txt" );
+
+		for ( i = 0; i < result.lines.size; i++ )
+		{
+			line = result.lines[ i ];
+			fields = [];
+			field_start = 0;
+
+			for ( j = 0; j < line.size; j++ )
+			{
+				if ( line[ j ] == "," )
+				{
+					fields[ fields.size ] = getsubstr( line, field_start, j );
+					field_start = j + 1;
+				}
+			}
+
+			fields[ fields.size ] = getsubstr( line, field_start, line.size );
+
+			if ( fields.size < 4 || fields[ 0 ] == "" )
+			{
+				continue;
+			}
+
+			config = spawnstruct();
+			config.title = fields[ 2 ];
+			config.emblem = fields[ 3 ];
+			level.bot_card_configs[ fields[ 0 ] ] = config;
+		}
+	}
+
+	return level.bot_card_configs[ bot_name ];
 }
 
 /*
