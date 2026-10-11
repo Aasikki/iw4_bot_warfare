@@ -66,11 +66,9 @@ You can find the ModDB release post [here](https://www.moddb.com/mods/bot-warfar
 ## Documentation
 
 ### Bot Names and Title Cards
-Keep the root `bots.txt` in the native `name,clan` format. To set bot title cards, add matching rows to `scriptdata/bots.txt` in the format `name,clan,title,emblem`.
+Configure each bot in the root `bots.txt` using `name,clan,title,emblem`. The release package generates the native two-column bot list and the script's card settings from this single file.
 
-The first two fields in both files must match. IW4x reads names and clan tags from the root file; the GSC script reads card settings from `scriptdata/bots.txt`, which is included in the release package.
-
-The title and emblem values must match entries in the game's `mp/cardTitleTable.csv` and `mp/cardIconTable.csv`. Leave either value empty to use a random card element for that field. For example, `bot1,BOT,cardtitle_default,cardicon_default` sets both, while `bot1,BOT,,cardicon_default` keeps a random title.
+The title and emblem values must match entries in the game's `mp/cardTitleTable.csv` and `mp/cardIconTable.csv`. Leave either value empty to use a random card element for that field. For example, `bot1,BOT,cardtitle_default,cardicon_default` sets both, while `bot1,BOT,,cardicon_default` keeps a random title. Two-column rows such as `bot1,BOT` remain valid and use random cards.
 
 ### Menu Usage
 - You can open the menu by pressing the Action Slot 2 key (default '5').
