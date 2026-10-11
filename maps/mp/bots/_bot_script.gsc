@@ -305,7 +305,7 @@ getBotCardConfigs()
 
 		if ( fields.size > 4 && fields[ 4 ] != "" )
 		{
-			config.level = int( fields[ 4 ] );
+			config.bot_level = int( fields[ 4 ] );
 		}
 
 		if ( fields.size > 5 && fields[ 5 ] != "" )
@@ -331,9 +331,9 @@ applyBotCardConfig( config )
 		self SetClanTag( config.clan );
 	}
 
-	if ( isdefined( config.level ) )
+	if ( isdefined( config.bot_level ) )
 	{
-		bot_level = config.level;
+		bot_level = config.bot_level;
 		if ( bot_level < 1 )
 		{
 			bot_level = 1;
