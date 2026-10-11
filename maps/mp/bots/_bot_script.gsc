@@ -303,6 +303,16 @@ getBotCardConfigs()
 			config.emblem = fields[ 3 ];
 		}
 
+		if ( fields.size > 4 && fields[ 4 ] != "" )
+		{
+			config.level = int( fields[ 4 ] );
+		}
+
+		if ( fields.size > 5 && fields[ 5 ] != "" )
+		{
+			config.prestige = int( fields[ 5 ] );
+		}
+
 		cards[ cards.size ] = config;
 	}
 
@@ -319,6 +329,37 @@ applyBotCardConfig( config )
 	if ( isdefined( config.clan ) && config.clan != "" )
 	{
 		self SetClanTag( config.clan );
+	}
+
+	if ( isdefined( config.level ) )
+	{
+		bot_level = config.level;
+		if ( bot_level < 1 )
+		{
+			bot_level = 1;
+		}
+		else if ( bot_level > level.maxrank )
+		{
+			bot_level = level.maxrank;
+		}
+
+		self setplayerdata( "experience", maps\mp\gametypes\_rank::getrankinfominxp( bot_level ) );
+		self.pers[ "rank" ] = bot_level;
+	}
+
+	if ( isdefined( config.prestige ) )
+	{
+		bot_prestige = config.prestige;
+		if ( bot_prestige < 0 )
+		{
+			bot_prestige = 0;
+		}
+		else if ( bot_prestige > 11 )
+		{
+			bot_prestige = 11;
+		}
+
+		self setplayerdata( "prestige", bot_prestige );
 	}
 
 	if ( isdefined( config.title ) && config.title != "" )
