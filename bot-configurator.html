@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bot Roster Configurator</title>
+<style>
+:root {
+  color-scheme: light;
+  --paper: #f4f2e9;
+  --panel: #fffef9;
+  --ink: #20231f;
+  --muted: #72776e;
+  --line: #d8d9cf;
+  --green: #176d53;
+  --green-dark: #0e4d3b;
+  --lime: #d5e96a;
+  --orange: #d66b38;
+  --danger: #a23f34;
+  --mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  --sans: "DM Sans", "Avenir Next", Avenir, sans-serif;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  min-width: 320px;
+  background-color: var(--paper);
+  background-image: linear-gradient(#dedfd522 1px, transparent 1px), linear-gradient(90deg, #dedfd522 1px, transparent 1px);
+  background-size: 24px 24px;
+  color: var(--ink);
+  font: 14px/1.45 var(--sans);
+}
+button, input { font: inherit; }
+button { cursor: pointer; }
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  min-height: 76px;
+  padding: 14px clamp(18px, 4vw, 58px);
+  background: var(--ink);
+  color: #f9f8f1;
+}
+.brand { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  background: var(--lime);
+  color: var(--ink);
+  font: 800 15px/1 var(--mono);
+}
+.brand-kicker { color: #b5bdad; font: 10px/1.4 var(--mono); text-transform: uppercase; }
+.brand-title { margin-top: 2px; font-size: 17px; font-weight: 700; }
+.top-meta { color: #c8cec3; font: 11px var(--mono); white-space: nowrap; }
+main { max-width: 1520px; margin: 0 auto; padding: 32px clamp(16px, 4vw, 58px) 48px; }
+.intro { display: flex; align-items: end; justify-content: space-between; gap: 20px; margin-bottom: 22px; }
+h1 { margin: 0; font-size: clamp(25px, 3vw, 36px); line-height: 1.08; font-weight: 750; }
+.intro-note { margin-top: 8px; color: var(--muted); font-size: 13px; }
+.entry-count { color: var(--green-dark); font: 700 12px var(--mono); white-space: nowrap; }
+.toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-bottom: 0;
+  background: var(--panel);
+}
+.toolbar-spacer { flex: 1; }
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 13px;
+  border: 1px solid var(--line);
+  background: #fffef9;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 700;
+  transition: border-color .15s, background .15s, transform .15s;
+}
+.button:hover { border-color: var(--green); background: #f4f7ed; }
+.button:active { transform: translateY(1px); }
+.button.primary { border-color: var(--green); background: var(--green); color: white; }
+.button.primary:hover { background: var(--green-dark); }
+.button.export { border-color: var(--ink); background: var(--lime); color: var(--ink); }
+.button.export:hover { background: #e1f27e; }
+.button .glyph { font: 16px/1 var(--mono); }
+.file-input { display: none; }
+.lookup-state { display: flex; align-items: center; gap: 7px; margin-left: 4px; color: var(--muted); font: 10px var(--mono); }
+.lookup-dot { width: 7px; height: 7px; background: #c5c8be; border-radius: 50%; }
+.lookup-dot.ready { background: #51a176; }
+.workspace { display: grid; grid-template-columns: minmax(0, 1fr) 290px; border: 1px solid var(--line); background: var(--panel); }
+.roster-panel { min-width: 0; border-right: 1px solid var(--line); }
+.table-scroll { overflow-x: auto; }
+.roster-table { min-width: 1020px; }
+.table-head, .bot-row {
+  display: grid;
+  grid-template-columns: 42px minmax(130px, 1.25fr) minmax(80px, .7fr) minmax(150px, 1.1fr) minmax(150px, 1.1fr) 94px 94px 38px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+}
+.table-head { height: 38px; border-bottom: 1px solid var(--line); background: #efefe7; color: #656b61; font: 10px var(--mono); text-transform: uppercase; }
+.bot-row { min-height: 56px; border-bottom: 1px solid #e7e7df; animation: arrive .24s ease-out both; }
+.bot-row:last-child { border-bottom: 0; }
+@keyframes arrive { from { opacity: .35; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
+.row-index { color: #858a80; font: 11px var(--mono); }
+.cell-input {
+  width: 100%;
+  min-width: 0;
+  height: 34px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-bottom-color: #d8d9d0;
+  outline: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: 12px;
+}
+.cell-input:hover { border-color: #c7d0c2; background: #fbfcf7; }
+.cell-input:focus { border-color: var(--green); background: white; box-shadow: 0 0 0 2px #176d5318; }
+.cell-input.mono { font: 11px var(--mono); }
+.cell-input.number { text-align: center; }
+.remove-button { display: grid; place-items: center; width: 30px; height: 30px; border: 0; background: transparent; color: #8a8d84; font: 18px/1 var(--mono); }
+.remove-button:hover { background: #fae9e3; color: var(--danger); }
+.empty-state { padding: 64px 20px; color: var(--muted); text-align: center; }
+.empty-mark { margin-bottom: 12px; color: var(--orange); font: 34px/1 var(--mono); }
+.empty-state strong { display: block; color: var(--ink); font-size: 15px; }
+.empty-state span { display: block; margin-top: 5px; font-size: 12px; }
+.preview-panel { display: flex; flex-direction: column; min-width: 0; background: #fbfaf4; }
+.preview-head { padding: 16px 16px 12px; border-bottom: 1px solid var(--line); }
+.preview-title { display: flex; align-items: center; justify-content: space-between; font-weight: 750; }
+.preview-count { color: var(--green); font: 10px var(--mono); }
+.preview-path { margin-top: 4px; color: var(--muted); font: 10px var(--mono); overflow-wrap: anywhere; }
+.preview-code { flex: 1; min-height: 230px; margin: 0; padding: 14px 16px; overflow: auto; color: #e0e8d5; background: #242923; font: 10px/1.8 var(--mono); white-space: pre; }
+.preview-foot { min-height: 44px; padding: 11px 15px; color: var(--muted); font-size: 11px; }
+.preview-foot .status { display: flex; align-items: center; gap: 8px; }
+.status-icon { color: var(--green); font: 14px var(--mono); }
+.toast { position: fixed; right: 22px; bottom: 22px; z-index: 5; padding: 12px 16px; background: var(--ink); color: white; box-shadow: 0 5px 24px #20231f2b; font-size: 12px; opacity: 0; transform: translateY(8px); pointer-events: none; transition: .2s ease; }
+.toast.show { opacity: 1; transform: translateY(0); }
+@media (max-width: 980px) {
+  .workspace { grid-template-columns: minmax(0, 1fr); }
+  .roster-panel { border-right: 0; border-bottom: 1px solid var(--line); }
+  .preview-code { min-height: 150px; }
+}
+@media (max-width: 620px) {
+  .topbar { align-items: flex-start; flex-direction: column; gap: 7px; padding: 13px 17px; }
+  .top-meta { padding-left: 54px; }
+  main { padding: 24px 12px 32px; }
+  .intro { align-items: flex-start; flex-direction: column; gap: 10px; }
+  .toolbar { gap: 6px; padding: 9px; }
+  .button { min-height: 36px; padding: 0 9px; font-size: 11px; }
+  .toolbar-spacer { display: none; }
+  .lookup-state { width: 100%; margin: 4px 1px 0; }
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><div class="brand-mark" aria-hidden="true">BW</div><div><div class="brand-kicker">IW4x / SERVER TOOLS</div><div class="brand-title">Bot roster configurator</div></div></div>
+  <div class="top-meta">LOCAL CONFIG // CSV OUTPUT</div>
+</header>
+<main>
+  <section class="intro" aria-labelledby="page-title">
+    <div><h1 id="page-title">Roster builder</h1><div class="intro-note">Names, tags, cards, rank and prestige in one file.</div></div>
+    <div class="entry-count" id="entry-count">00 BOTS</div>
+  </section>
+  <section class="toolbar" aria-label="Roster actions">
+    <button class="button" id="import-button" type="button"><span class="glyph" aria-hidden="true">&#8593;</span> Import bots.txt</button>
+    <input class="file-input" id="import-file" type="file" accept=".txt,text/plain">
+    <button class="button" id="titles-button" type="button">Load title table</button>
+    <input class="file-input" id="titles-file" type="file" accept=".csv,text/csv">
+    <button class="button" id="icons-button" type="button">Load emblem table</button>
+    <input class="file-input" id="icons-file" type="file" accept=".csv,text/csv">
+    <div class="toolbar-spacer"></div>
+    <button class="button primary" id="add-button" type="button"><span class="glyph" aria-hidden="true">+</span> Add bot</button>
+    <button class="button export" id="download-button" type="button"><span class="glyph" aria-hidden="true">&#8595;</span> Download bots.txt</button>
+    <div class="lookup-state"><span class="lookup-dot" id="lookup-dot"></span><span id="lookup-label">CARD TABLES NOT LOADED</span></div>
+  </section>
+  <section class="workspace" aria-label="Bot roster editor">
+    <div class="roster-panel"><div class="table-scroll"><div class="roster-table">
+      <div class="table-head" aria-hidden="true"><span>#</span><span>Name</span><span>Clan</span><span>Title ID</span><span>Emblem ID</span><span>Level</span><span>Prestige</span><span></span></div>
+      <div id="roster"></div>
+    </div></div></div>
+    <aside class="preview-panel" aria-label="File preview">
+      <div class="preview-head"><div class="preview-title"><span>Output preview</span><span class="preview-count" id="preview-count">0 LINES</span></div><div class="preview-path">userraw/scriptdata/bots.txt</div></div>
+      <pre class="preview-code" id="preview-code"></pre>
+      <div class="preview-foot"><div class="status"><span class="status-icon" id="status-icon">&#10003;</span><span id="status-text">Ready</span></div></div>
+    </aside>
+  </section>
+</main>
+<datalist id="title-options"><option value="cardtitle_default"></option><option value="cardtitle_ssdd"></option></datalist>
+<datalist id="emblem-options"><option value="cardicon_default"></option><option value="cardicon_pvt1"></option></datalist>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+"use strict";
+const storageKey = "iw4-bot-roster-config-v1";
+const fieldNames = ["name", "clan", "title", "emblem", "level", "prestige"];
+const rows = [];
+const knownTitles = new Set();
+const knownEmblems = new Set();
+const rosterElement = document.getElementById("roster");
+const previewElement = document.getElementById("preview-code");
+const toastElement = document.getElementById("toast");
+let toastTimer;
+
+function emptyRow(name = "") {
+  return { name, clan: "BOT", title: "cardtitle_default", emblem: "cardicon_default", level: "", prestige: "" };
+}
+function notify(message) {
+  toastElement.textContent = message;
+  toastElement.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastElement.classList.remove("show"), 2600);
+}
+function nextBotName() {
+  const used = new Set(rows.map(row => row.name));
+  for (let number = 1; number <= rows.length + 1; number++) {
+    const candidate = `bot${number}`;
+    if (!used.has(candidate)) return candidate;
+  }
+  return `bot${rows.length + 1}`;
+}
+function saveLocal() {
+  try { localStorage.setItem(storageKey, JSON.stringify(rows)); } catch (_) {}
+}
+function render() {
+  rosterElement.replaceChildren();
+  if (!rows.length) {
+    const empty = document.createElement("div");
+    empty.className = "empty-state";
+    empty.innerHTML = '<div class="empty-mark" aria-hidden="true">&#9633;</div><strong>Roster is empty</strong><span>Import a bots.txt file or add a bot to begin.</span>';
+    rosterElement.append(empty);
+  }
+  rows.forEach((row, index) => {
+    const line = document.createElement("div");
+    line.className = "bot-row";
+    const number = document.createElement("span");
+    number.className = "row-index";
+    number.textContent = String(index + 1).padStart(2, "0");
+    line.append(number);
+    for (const key of fieldNames) {
+      const input = document.createElement("input");
+      input.className = `cell-input${["title", "emblem"].includes(key) ? " mono" : ""}${["level", "prestige"].includes(key) ? " number" : ""}`;
+      input.type = ["level", "prestige"].includes(key) ? "number" : "text";
+      input.value = row[key] ?? "";
+      input.setAttribute("aria-label", `Bot ${index + 1} ${key}`);
+      input.autocomplete = "off";
+      if (key === "title") input.setAttribute("list", "title-options");
+      if (key === "emblem") input.setAttribute("list", "emblem-options");
+      if (key === "level") { input.min = "1"; input.max = "70"; input.placeholder = "Auto"; }
+      if (key === "prestige") { input.min = "0"; input.max = "11"; input.placeholder = "Auto"; }
+      input.addEventListener("input", () => { rows[index][key] = input.value; saveLocal(); updatePreview(); });
+      line.append(input);
+    }
+    const remove = document.createElement("button");
+    remove.className = "remove-button";
+    remove.type = "button";
+    remove.textContent = "×";
+    remove.setAttribute("aria-label", `Remove bot ${row.name || index + 1}`);
+    remove.title = "Remove bot";
+    remove.addEventListener("click", () => { rows.splice(index, 1); saveLocal(); render(); });
+    line.append(remove);
+    rosterElement.append(line);
+  });
+  updatePreview();
+}
+function serializeRows() {
+  return rows.map(row => fieldNames.map(key => String(row[key] ?? "").trim()).join(",")).join("\r\n") + (rows.length ? "\r\n" : "");
+}
+function updatePreview() {
+  const output = serializeRows();
+  const lines = output.trimEnd() ? output.trimEnd().split(/\r?\n/) : [];
+  previewElement.textContent = lines.slice(0, 9).join("\n") + (lines.length > 9 ? `\n... ${lines.length - 9} more` : "");
+  document.getElementById("entry-count").textContent = `${String(rows.length).padStart(2, "0")} ${rows.length === 1 ? "BOT" : "BOTS"}`;
+  document.getElementById("preview-count").textContent = `${rows.length} ${rows.length === 1 ? "LINE" : "LINES"}`;
+  document.getElementById("status-text").textContent = rows.length ? "Ready to export" : "Ready";
+}
+function parseConfig(text) {
+  const parsed = [];
+  const lines = text.replace(/^\uFEFF/, "").split(/\r?\n/);
+  for (let index = 0; index < lines.length; index++) {
+    const line = lines[index].trim();
+    if (!line) continue;
+    const fields = line.split(",").map(value => value.trim());
+    if (fields.length < 2 || fields.length > fieldNames.length) throw new Error(`Line ${index + 1} must have 2 to 6 comma-separated fields.`);
+    parsed.push({ ...emptyRow(), ...Object.fromEntries(fieldNames.map((key, field) => [key, fields[field] ?? ""])) });
+  }
+  return parsed;
+}
+function checkRows() {
+  if (!rows.length) return "Add at least one bot.";
+  for (let index = 0; index < rows.length; index++) {
+    const row = rows[index];
+    if (!row.name.trim()) return `Bot ${index + 1} needs a name.`;
+    for (const key of fieldNames) {
+      if (row[key].includes(",") || /[\r\n]/.test(row[key])) return `Bot ${index + 1} has an invalid comma or line break in ${key}.`;
+    }
+    if (row.level !== "" && (!Number.isInteger(Number(row.level)) || Number(row.level) < 1 || Number(row.level) > 70)) return `Bot ${index + 1} level must be from 1 to 70.`;
+    if (row.prestige !== "" && (!Number.isInteger(Number(row.prestige)) || Number(row.prestige) < 0 || Number(row.prestige) > 11)) return `Bot ${index + 1} prestige must be from 0 to 11.`;
+    if (knownTitles.size && row.title && !knownTitles.has(row.title)) return `Bot ${index + 1} title is not in the loaded title table.`;
+    if (knownEmblems.size && row.emblem && !knownEmblems.has(row.emblem)) return `Bot ${index + 1} emblem is not in the loaded emblem table.`;
+  }
+  return "";
+}
+function downloadConfig() {
+  const error = checkRows();
+  if (error) {
+    document.getElementById("status-text").textContent = error;
+    document.getElementById("status-icon").textContent = "!";
+    notify(error);
+    return;
+  }
+  const blob = new Blob([serializeRows()], { type: "text/plain;charset=utf-8" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "bots.txt";
+  link.click();
+  URL.revokeObjectURL(link.href);
+  document.getElementById("status-text").textContent = "bots.txt downloaded";
+  document.getElementById("status-icon").textContent = "✓";
+}
+function loadConfigFile(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const parsed = parseConfig(String(reader.result));
+      rows.splice(0, rows.length, ...parsed);
+      saveLocal();
+      render();
+      notify(`Loaded ${rows.length} bots.`);
+    } catch (error) { notify(error.message); }
+  };
+  reader.onerror = () => notify("Could not read that file.");
+  reader.readAsText(file);
+}
+function loadLookup(file, kind) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    const values = new Set(String(reader.result).replace(/^\uFEFF/, "").split(/\r?\n/).map(line => line.split(",")[0].trim()).filter(Boolean));
+    const list = document.getElementById(kind === "title" ? "title-options" : "emblem-options");
+    const target = kind === "title" ? knownTitles : knownEmblems;
+    target.clear();
+    for (const value of values) target.add(value);
+    list.replaceChildren(...[...values].map(value => { const option = document.createElement("option"); option.value = value; return option; }));
+    updateLookupStatus();
+    notify(`Loaded ${values.size} ${kind} IDs.`);
+  };
+  reader.onerror = () => notify("Could not read that table.");
+  reader.readAsText(file);
+}
+function updateLookupStatus() {
+  const ready = knownTitles.size && knownEmblems.size;
+  document.getElementById("lookup-dot").classList.toggle("ready", Boolean(ready));
+  document.getElementById("lookup-label").textContent = ready ? `${knownTitles.size} TITLES / ${knownEmblems.size} EMBLEMS LOADED` : `${knownTitles.size ? "TITLES" : "NO TITLES"} / ${knownEmblems.size ? "EMBLEMS" : "NO EMBLEMS"}`;
+}
+document.getElementById("add-button").addEventListener("click", () => {
+  rows.push(emptyRow(nextBotName()));
+  saveLocal();
+  render();
+  document.querySelector("#roster .bot-row:last-child input").focus();
+});
+document.getElementById("download-button").addEventListener("click", downloadConfig);
+document.getElementById("import-button").addEventListener("click", () => document.getElementById("import-file").click());
+document.getElementById("import-file").addEventListener("change", event => { if (event.target.files[0]) loadConfigFile(event.target.files[0]); event.target.value = ""; });
+document.getElementById("titles-button").addEventListener("click", () => document.getElementById("titles-file").click());
+document.getElementById("titles-file").addEventListener("change", event => { if (event.target.files[0]) loadLookup(event.target.files[0], "title"); event.target.value = ""; });
+document.getElementById("icons-button").addEventListener("click", () => document.getElementById("icons-file").click());
+document.getElementById("icons-file").addEventListener("change", event => { if (event.target.files[0]) loadLookup(event.target.files[0], "emblem"); event.target.value = ""; });
+try {
+  const saved = localStorage.getItem(storageKey);
+  if (saved) rows.push(...JSON.parse(saved).map(row => ({ ...emptyRow(), ...row })));
+} catch (_) {}
+render();
+</script>
+</body>
+</html>
