@@ -66,7 +66,7 @@ You can find the ModDB release post [here](https://www.moddb.com/mods/bot-warfar
 ## Documentation
 
 ### Bot Names and Title Cards
-Configure each bot in the root `bots.txt` using `name,clan,title,emblem`. The release package generates the native two-column bot list and the script's card settings from this single file.
+Configure bots in `userraw/scriptdata/bots.txt` on the server. Each row is `name,clan,title,emblem`; this is the only bot identity file to edit. The GSC script applies rows as bots are added and checks for edits once per second to update bots already in the match.
 
 The title and emblem values must match entries in the game's `mp/cardTitleTable.csv` and `mp/cardIconTable.csv`. Leave either value empty to use a random card element for that field. For example, `bot1,BOT,cardtitle_default,cardicon_default` sets both, while `bot1,BOT,,cardicon_default` keeps a random title. Two-column rows such as `bot1,BOT` remain valid and use random cards.
 

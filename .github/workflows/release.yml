@@ -30,10 +30,9 @@ jobs:
             mkdir -p release_payload/scriptdata
             cp -R scriptdata/waypoints release_payload/scriptdata/
           fi
-          if [ -f bots.txt ]; then
-            mkdir -p release_payload/scriptdata
-            awk -F, 'NF < 2 { exit 1 } { print $1 "," $2 }' bots.txt > release_payload/bots.txt
-            cp bots.txt release_payload/scriptdata/bots.txt
+          if [ -f scriptdata/bots.txt ]; then
+            mkdir -p release_payload/userraw/scriptdata
+            cp scriptdata/bots.txt release_payload/userraw/scriptdata/
           fi
 
           cd release_payload

@@ -26,18 +26,16 @@ added()
 		self setplayerdata( "cardTitle", random( getCardTitles() ) );
 		self setplayerdata( "cardIcon", random( getCardIcons() ) );
 
-		card_config = getBotCardConfig( self.name );
+		card_config = getBotCardConfig();
 		if ( isdefined( card_config ) )
 		{
-			if ( isdefined( card_config.title ) && card_config.title != "" )
-			{
-				self setplayerdata( "cardTitle", card_config.title );
-			}
+			self applyBotCardConfig( card_config );
+		}
 
-			if ( isdefined( card_config.emblem ) && card_config.emblem != "" )
-			{
-				self setplayerdata( "cardIcon", card_config.emblem );
-			}
+		if ( !isdefined( level.bot_card_config_watcher_started ) )
+		{
+			level.bot_card_config_watcher_started = true;
+			level thread botCardConfigWatch();
 		}
 	}
 	
@@ -242,45 +240,141 @@ getCardIcons()
 }
 
 /*
-	Gets custom title card settings for a bot from bots.txt
+	Assigns config rows in order as bots are added.
 */
-getBotCardConfig( bot_name )
+getBotCardConfig()
 {
-	if ( !isdefined( level.bot_card_configs ) )
+	cards = getBotCardConfigs();
+
+	if ( !cards.size )
 	{
-		level.bot_card_configs = [];
-		result = getWaypointLinesFromFile( "bots.txt" );
-
-		for ( i = 0; i < result.lines.size; i++ )
-		{
-			line = result.lines[ i ];
-			fields = [];
-			field_start = 0;
-
-			for ( j = 0; j < line.size; j++ )
-			{
-				if ( line[ j ] == "," )
-				{
-					fields[ fields.size ] = getsubstr( line, field_start, j );
-					field_start = j + 1;
-				}
-			}
-
-			fields[ fields.size ] = getsubstr( line, field_start, line.size );
-
-			if ( fields.size < 4 || fields[ 0 ] == "" )
-			{
-				continue;
-			}
-
-			config = spawnstruct();
-			config.title = fields[ 2 ];
-			config.emblem = fields[ 3 ];
-			level.bot_card_configs[ fields[ 0 ] ] = config;
-		}
+		return undefined;
 	}
 
-	return level.bot_card_configs[ bot_name ];
+	if ( !isdefined( level.bot_card_config_index ) )
+	{
+		level.bot_card_config_index = 0;
+	}
+
+	config = cards[ level.bot_card_config_index % cards.size ];
+	self.bot_card_config_index = level.bot_card_config_index % cards.size;
+	level.bot_card_config_index++;
+	return config;
+}
+
+getBotCardConfigs()
+{
+	result = getWaypointLinesFromFile( "bots.txt" );
+	cards = [];
+
+	for ( i = 0; i < result.lines.size; i++ )
+	{
+		line = result.lines[ i ];
+		fields = [];
+		field_start = 0;
+
+		for ( j = 0; j < line.size; j++ )
+		{
+			if ( line[ j ] == "," )
+			{
+				fields[ fields.size ] = getsubstr( line, field_start, j );
+				field_start = j + 1;
+			}
+		}
+
+		fields[ fields.size ] = getsubstr( line, field_start, line.size );
+
+		if ( fields.size < 2 || fields[ 0 ] == "" )
+		{
+			continue;
+		}
+
+		config = spawnstruct();
+		config.name = fields[ 0 ];
+		config.clan = fields[ 1 ];
+
+		if ( fields.size > 2 )
+		{
+			config.title = fields[ 2 ];
+		}
+
+		if ( fields.size > 3 )
+		{
+			config.emblem = fields[ 3 ];
+		}
+
+		cards[ cards.size ] = config;
+	}
+
+	return cards;
+}
+
+applyBotCardConfig( config )
+{
+	if ( isdefined( config.name ) && config.name != "" )
+	{
+		self SetName( config.name );
+	}
+
+	if ( isdefined( config.clan ) && config.clan != "" )
+	{
+		self SetClanTag( config.clan );
+	}
+
+	if ( isdefined( config.title ) && config.title != "" )
+	{
+		self setplayerdata( "cardTitle", config.title );
+	}
+	else
+	{
+		self setplayerdata( "cardTitle", random( getCardTitles() ) );
+	}
+
+	if ( isdefined( config.emblem ) && config.emblem != "" )
+	{
+		self setplayerdata( "cardIcon", config.emblem );
+	}
+	else
+	{
+		self setplayerdata( "cardIcon", random( getCardIcons() ) );
+	}
+}
+
+botCardConfigWatch()
+{
+	level endon( "game_ended" );
+	contents = undefined;
+
+	for ( ;; )
+	{
+		new_contents = BotBuiltinFileRead( "bots.txt" );
+
+		if ( isdefined( new_contents ) && new_contents != contents )
+		{
+			contents = new_contents;
+			cards = getBotCardConfigs();
+
+			if ( cards.size )
+			{
+				bots = getBotArray();
+
+				for ( i = 0; i < bots.size; i++ )
+				{
+					bot = bots[ i ];
+
+					if ( !isdefined( bot.bot_card_config_index ) )
+					{
+						continue;
+					}
+
+					config = cards[ bot.bot_card_config_index % cards.size ];
+					bot applyBotCardConfig( config );
+				}
+			}
+		}
+
+		wait 1;
+	}
 }
 
 /*
