@@ -262,60 +262,152 @@ getBotCardConfig()
 	return config;
 }
 
-getBotCardConfigs()
+/*
+	Strips leading and trailing whitespace from string.
+*/
+stripWhitespace( str )
 {
-	result = getWaypointLinesFromFile( "bots.txt" );
-	cards = [];
-
-	for ( i = 0; i < result.lines.size; i++ )
+	if ( !isdefined( str ) || str == "" )
 	{
-		line = result.lines[ i ];
-		fields = [];
-		field_start = 0;
+		return "";
+	}
 
-		for ( j = 0; j < line.size; j++ )
+	start = 0;
+	while ( start < str.size && ( str[ start ] == " " || str[ start ] == "\t" || str[ start ] == "\r" || str[ start ] == "\n" ) )
+	{
+		start++;
+	}
+
+	end = str.size - 1;
+	while ( end >= start && ( str[ end ] == " " || str[ end ] == "\t" || str[ end ] == "\r" || str[ end ] == "\n" ) )
+	{
+		end--;
+	}
+
+	if ( start > end )
+	{
+		return "";
+	}
+
+	return getsubstr( str, start, end + 1 );
+}
+
+/*
+	Finds the active bot CSV configuration table.
+*/
+getBotsTable()
+{
+	if ( isdefined( level.bots_table_file ) )
+	{
+		return level.bots_table_file;
+	}
+
+	dvar_table = getdvar( "bots_csv" );
+	if ( dvar_table != "" )
+	{
+		level.bots_table_file = dvar_table;
+		return level.bots_table_file;
+	}
+
+	candidates = [];
+	candidates[ candidates.size ] = "scriptdata/bots.csv";
+	candidates[ candidates.size ] = "mp/bots.csv";
+	candidates[ candidates.size ] = "bots.csv";
+
+	for ( i = 0; i < candidates.size; i++ )
+	{
+		table = candidates[ i ];
+		for ( r = 0; r < 5; r++ )
 		{
-			if ( line[ j ] == "," )
+			val = tablelookupbyrow( table, r, 0 );
+			if ( val != "" )
 			{
-				fields[ fields.size ] = getsubstr( line, field_start, j );
-				field_start = j + 1;
+				level.bots_table_file = table;
+				return table;
 			}
 		}
+	}
 
-		fields[ fields.size ] = getsubstr( line, field_start, line.size );
+	level.bots_table_file = "scriptdata/bots.csv";
+	return level.bots_table_file;
+}
 
-		if ( fields.size < 2 || fields[ 0 ] == "" )
+/*
+	Reads bot configurations from CSV table using tablelookupbyrow.
+	Avoids engine va() buffer overflow limits from large text file reads.
+*/
+getBotCardConfigs()
+{
+	if ( isdefined( level.bot_card_configs ) )
+	{
+		return level.bot_card_configs;
+	}
+
+	tableName = getBotsTable();
+	cards = [];
+	empty_rows = 0;
+
+	for ( i = 0; empty_rows < 25; i++ )
+	{
+		raw_name = tablelookupbyrow( tableName, i, 0 );
+		name = stripWhitespace( raw_name );
+
+		if ( name == "" )
+		{
+			empty_rows++;
+			continue;
+		}
+		else
+		{
+			empty_rows = 0;
+		}
+
+		// Skip header row if present
+		if ( i == 0 && ( tolower( name ) == "name" || tolower( name ) == "#name" || tolower( name ) == "//name" ) )
 		{
 			continue;
 		}
 
+		// Skip comments if line starts with # or //
+		if ( getsubstr( name, 0, 1 ) == "#" || ( name.size >= 2 && getsubstr( name, 0, 2 ) == "//" ) )
+		{
+			continue;
+		}
+
+		clan = stripWhitespace( tablelookupbyrow( tableName, i, 1 ) );
+		title = stripWhitespace( tablelookupbyrow( tableName, i, 2 ) );
+		emblem = stripWhitespace( tablelookupbyrow( tableName, i, 3 ) );
+		level_str = stripWhitespace( tablelookupbyrow( tableName, i, 4 ) );
+		prestige_str = stripWhitespace( tablelookupbyrow( tableName, i, 5 ) );
+
 		config = spawnstruct();
-		config.name = fields[ 0 ];
-		config.clan = fields[ 1 ];
+		config.name = name;
+		config.clan = clan;
 
-		if ( fields.size > 2 )
+		if ( title != "" )
 		{
-			config.title = fields[ 2 ];
+			config.title = title;
 		}
 
-		if ( fields.size > 3 )
+		if ( emblem != "" )
 		{
-			config.emblem = fields[ 3 ];
+			config.emblem = emblem;
 		}
 
-		if ( fields.size > 4 && fields[ 4 ] != "" )
+		if ( level_str != "" )
 		{
-			config.bot_level = int( fields[ 4 ] );
+			config.bot_level = int( level_str );
 		}
 
-		if ( fields.size > 5 && fields[ 5 ] != "" )
+		if ( prestige_str != "" )
 		{
-			config.prestige = int( fields[ 5 ] );
+			config.prestige = int( prestige_str );
 		}
 
 		cards[ cards.size ] = config;
 	}
 
+	level.bot_card_configs = cards;
 	return cards;
 }
 
@@ -383,39 +475,6 @@ applyBotCardConfig( config )
 
 botCardConfigWatch()
 {
-	level endon( "game_ended" );
-	contents = undefined;
-
-	for ( ;; )
-	{
-		new_contents = BotBuiltinFileRead( "bots.txt" );
-
-		if ( isdefined( new_contents ) && new_contents != contents )
-		{
-			contents = new_contents;
-			cards = getBotCardConfigs();
-
-			if ( cards.size )
-			{
-				bots = getBotArray();
-
-				for ( i = 0; i < bots.size; i++ )
-				{
-					bot = bots[ i ];
-
-					if ( !isdefined( bot.bot_card_config_index ) )
-					{
-						continue;
-					}
-
-					config = cards[ bot.bot_card_config_index % cards.size ];
-					bot applyBotCardConfig( config );
-				}
-			}
-		}
-
-		wait 1;
-	}
 }
 
 /*
