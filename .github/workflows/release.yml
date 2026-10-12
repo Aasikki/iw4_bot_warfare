@@ -30,9 +30,9 @@ jobs:
             mkdir -p release_payload/scriptdata
             cp -R scriptdata/waypoints release_payload/scriptdata/
           fi
-          if [ -f scriptdata/bots.txt ]; then
+          if [ -f scriptdata/bots.csv ]; then
             mkdir -p release_payload/scriptdata
-            cp scriptdata/bots.txt release_payload/scriptdata/
+            cp scriptdata/bots.csv release_payload/scriptdata/
           fi
 
           cd release_payload
