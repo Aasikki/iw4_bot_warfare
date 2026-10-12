@@ -66,11 +66,11 @@ You can find the ModDB release post [here](https://www.moddb.com/mods/bot-warfar
 ## Documentation
 
 ### Bot Names and Title Cards
-Configure bots in `scriptdata/bots.txt` on the server. Each row is `name,clan,title,emblem,level,prestige`; this is the only bot identity file to edit. The GSC script applies rows as bots are added and checks for edits once per second to update bots already in the match.
+Configure bots in `scriptdata/bots.csv` (or `mp/bots.csv`) on the server. Each row is `name,clan,title,emblem,level,prestige`; this is the only bot identity file to edit. The mod parses `bots.csv` line-by-line via the engine's built-in `tableLookupByRow()` function, avoiding engine string memory / `va()` buffer limits (which crash the server if a text file exceeds 1024 bytes). The GSC script applies rows in order as bots are added to the match. You can also set the `bots_csv` dvar to point to a custom table location if needed.
 
 To edit and download this file with a graphical configurator, open [bot-configurator.html](bot-configurator.html).
 
-The title and emblem values must match entries in the game's `mp/cardTitleTable.csv` and `mp/cardIconTable.csv`. Leave either value empty to use a random card element for that field. Leave level or prestige empty to use the normal bot setting. Levels are from `1` through the game's max rank (normally `70`); prestige is from `0` to `11`. For example, `bot1,BOT,cardtitle_default,cardicon_default,50,3` sets all four, while `bot2,BOT,,,35,1` uses random cards at level 35, prestige 1. Four-column rows remain valid and use the normal bot level and prestige settings.
+The title and emblem values must match entries in the game's `mp/cardTitleTable.csv` and `mp/cardIconTable.csv`. Leave either value empty to use a random card element for that field. Leave level or prestige empty to use the normal bot setting. Levels are from `1` through the game's max rank (normally `70`); prestige is from `0` to `11`. For example, `bot1,BOT,cardtitle_default,cardicon_default,50,3` sets all four, while `bot2,BOT,,,35,1` uses random cards at level 35, prestige 1. Rows with fewer columns (e.g. 4 or 5 columns) remain valid and use the normal bot level and prestige settings.
 
 ### Menu Usage
 - You can open the menu by pressing the Action Slot 2 key (default '5').
